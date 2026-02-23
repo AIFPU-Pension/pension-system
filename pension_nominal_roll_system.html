@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIFPU - Pension</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #059669;
+            --accent: #d97706;
+            --danger: #dc2626;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+
+        header h1 { font-size: 2.5rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        header p { font-size: 1.1rem; opacity: 0.9; }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tab:hover, .nav-tab.active {
+            background: white;
+            color: var(--primary);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .card.active { display: block; animation: slideIn 0.5s ease; }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .required::after { content: " *"; color: var(--danger); }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(30, 58, 138, 0.3); }
+
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-secondary:hover { background: #047857; }
+
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+
+        .btn-warning { background: var(--accent); color: white; }
+        .btn-warning:hover { background: #b45309; }
+
+        .file-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .file-upload-area:hover { border-color: var(--primary-light); background: #eff6ff; }
+        .file-upload-area.has-file { border-color: var(--secondary); background: #ecfdf5; }
+
+        .file-upload-area input[type="file"] {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-list { margin-top: 10px; text-align: left; }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .promotion-entry {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .submit-section {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 16px;
+            border: 2px solid var(--primary-light);
+        }
+
+        /* Admin Panel Styles */
+        .admin-login {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 { font-size: 2rem; margin-bottom: 5px; }
+        .stat-card p { opacity: 0.9; }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input { flex: 1; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover { background: #f9fafb; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .action-btns { display: flex; gap: 5px; }
+
+        .action-btns button { padding: 6px 12px; font-size: 0.8rem; }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            display: none;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .toast.success { background: var(--secondary); }
+        .toast.error { background: var(--danger); }
+
+        .hidden { display: none !important; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media print {
+            body { background: white; }
+            .no-print { display: none; }
+            .card { box-shadow: none; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏛️ Akanu Ibian Federal Poly</h1>
+            <p>Staff Pension Nominal Roll Management System</p>
+        </header>
+
+        <nav class="nav-tabs no-print">
+            <button class="nav-tab active" onclick="showTab('staffForm')">📝 Staff Entry</button>
+            <button class="nav-tab" onclick="showTab('adminPanel')">🔐 Admin Panel</button>
+            <button class="nav-tab" onclick="showTab('instructions')">📖 Setup Guide</button>
+        </nav>
+
+        <!-- Staff Entry Form -->
+        <div id="staffForm" class="card active">
+            <h2 class="card-title">📝 Staff Information Entry</h2>
+
+            <form id="pensionForm">
+                <div class="row">
+                    <div class="form-group">
+                        <label class="required">Surname</label>
+                        <input type="text" name="surname" required placeholder="Enter surname">
+                    </div>
+                    <div class="form-group">
+                        <label class="required">First Name</label>
+                        <input type="text" name="firstName" required placeholder="Enter first name">
+                    </div>
+                    <div class="form-group">
+                        <label>Middle Name</label>
+                        <input type="text" name="middleName" placeholder="Enter middle name">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="required">Staff/File Number</label>
+                        <input type="text" name="staffNumber" required placeholder="e.g., FCS/2024/001">
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Sex</label>
+                        <select name="sex" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Date of Birth</label>
+                        <input type="date" name="dob" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="required">PENCOM PIN</label>
+                        <input type="text" name="pencomPin" required placeholder="e.g., PEN123456789">
+                    </div>
+                    <div class="form-group">
+                        <label class="required">PFA Name</label>
+                        <select name="pfaName" required>
+                            <option value="">Select Pension Fund Administrator</option>
+                            <option value="AIICO Pension Managers">AIICO Pension Managers</option>
+                            <option value="ARM Pension Managers">ARM Pension Managers</option>
+                            <option value="CrusaderSterling Pensions">CrusaderSterling Pensions</option>
+                            <option value="FCMB Pensions Limited">FCMB Pensions Limited</option>
+                            <option value="Fidelity Pension Managers">Fidelity Pension Managers</option>
+                            <option value="First Guarantee Pension">First Guarantee Pension</option>
+                            <option value="IEI-Anchor Pension Managers">IEI-Anchor Pension Managers</option>
+                            <option value="Leadway Pensure Pensions">Leadway Pensure Pensions</option>
+                            <option value="NLPC Pension Fund Administrators">NLPC Pension Fund Administrators</option>
+                            <option value="NPF Pensions Limited">NPF Pensions Limited</option>
+                            <option value="OAK Pensions Limited">OAK Pensions Limited</option>
+                            <option value="Pension Alliance Limited">Pension Alliance Limited</option>
+                            <option value="Premium Pension Limited">Premium Pension Limited</option>
+                            <option value="Radix Pension Managers">Radix Pension Managers</option>
+                            <option value="Sigma Pensions Limited">Sigma Pensions Limited</option>
+                            <option value="Stanbic IBTC Pension Managers">Stanbic IBTC Pension Managers</option>
+                            <option value="Trustfund Pensions Limited">Trustfund Pensions Limited</option>
+                            <option value="UBA Pensions Custodian Limited">UBA Pensions Custodian Limited</option>
+                            <option value="ValueAlliance Pension Managers">ValueAlliance Pension Managers</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="required">Date of First Appointment (Federal Civil Service)</label>
+                        <input type="date" name="firstAppointmentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Date of Appointment with Current Employer</label>
+                        <input type="date" name="currentAppointmentDate" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Designation/Grade</label>
+                    <input type="text" name="designation" required placeholder="e.g., Senior Administrative Officer">
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="required">Salary Structure</label>
+                        <select name="salaryStructure" required>
+                            <option value="">Select Structure</option>
+                            <option value="CONPSS">CONPSS</option>
+                            <option value="CONMESS">CONMESS</option>
+                            <option value="CONHESS">CONHESS</option>
+                            <option value="CONJUSS">CONJUSS</option>
+                            <option value="CONPASS">CONPASS</option>
+                            <option value="CONTISS">CONTISS</option>
+                            <option value="CONTISS II">CONTISS II</option>
+                            <option value="CONTEDISS">CONTEDISS</option>
+                            <option value="CONTISS 3">CONTISS 3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Grade Level</label>
+                        <select name="gradeLevel" required>
+                            <option value="">Select Grade</option>
+                            <option value="01">GL 01</option>
+                            <option value="02">GL 02</option>
+                            <option value="03">GL 03</option>
+                            <option value="04">GL 04</option>
+                            <option value="05">GL 05</option>
+                            <option value="06">GL 06</option>
+                            <option value="07">GL 07</option>
+                            <option value="08">GL 08</option>
+                            <option value="09">GL 09</option>
+                            <option value="10">GL 10</option>
+                            <option value="12">GL 12</option>
+                            <option value="13">GL 13</option>
+                            <option value="14">GL 14</option>
+                            <option value="15">GL 15</option>
+                            <option value="16">GL 16</option>
+                            <option value="17">GL 17</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Step</label>
+                        <select name="step" required>
+                            <option value="">Select Step</option>
+                            <option value="1">Step 1</option>
+                            <option value="2">Step 2</option>
+                            <option value="3">Step 3</option>
+                            <option value="4">Step 4</option>
+                            <option value="5">Step 5</option>
+                            <option value="6">Step 6</option>
+                            <option value="7">Step 7</option>
+                            <option value="8">Step 8</option>
+                            <option value="9">Step 9</option>
+                            <option value="10">Step 10</option>
+                            <option value="11">Step 11</option>
+                            <option value="12">Step 12</option>
+                            <option value="13">Step 13</option>
+                            <option value="14">Step 14</option>
+                            <option value="15">Step 15</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Promotion History</label>
+                    <div id="promotionsContainer">
+                        <div class="promotion-entry">
+                            <div class="row">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="number" name="promotionYear[]" placeholder="Year (e.g., 2020)" min="1960" max="2099">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="text" name="promotionDetails[]" placeholder="Details (e.g., GL 08 to GL 09)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-warning" onclick="addPromotion()">+ Add Promotion</button>
+                </div>
+
+                <div class="section-divider" style="height: 2px; background: var(--border); margin: 30px 0;"></div>
+
+                <h3 style="color: var(--primary); margin-bottom: 20px;">📎 Required Documents (PDF Only)</h3>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="required">Birth Certificate/Affidavit</label>
+                        <div class="file-upload-area" onclick="document.getElementById('birthCert').click()">
+                            <input type="file" id="birthCert" name="birthCert" accept=".pdf" required onchange="handleFile(this, 'birthPreview')">
+                            <div style="font-size: 2rem;">📄</div>
+                            <div>Click to upload PDF</div>
+                            <small style="color: var(--text-light);">Max: 5MB</small>
+                            <div id="birthPreview" class="file-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">Staff ID Card</label>
+                        <div class="file-upload-area" onclick="document.getElementById('staffId').click()">
+                            <input type="file" id="staffId" name="staffId" accept=".pdf" required onchange="handleFile(this, 'idPreview')">
+                            <div style="font-size: 2rem;">🪪</div>
+                            <div>Click to upload PDF</div>
+                            <small style="color: var(--text-light);">Max: 5MB</small>
+                            <div id="idPreview" class="file-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">Appointment Letter</label>
+                        <div class="file-upload-area" onclick="document.getElementById('appointmentLetter').click()">
+                            <input type="file" id="appointmentLetter" name="appointmentLetter" accept=".pdf" required onchange="handleFile(this, 'appointPreview')">
+                            <div style="font-size: 2rem;">📨</div>
+                            <div>Click to upload PDF</div>
+                            <small style="color: var(--text-light);">Max: 5MB</small>
+                            <div id="appointPreview" class="file-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Promotion Letters</label>
+                        <div class="file-upload-area" onclick="document.getElementById('promotionLetters').click()">
+                            <input type="file" id="promotionLetters" name="promotionLetters" accept=".pdf" multiple onchange="handleFile(this, 'promoPreview')">
+                            <div style="font-size: 2rem;">📈</div>
+                            <div>Click to upload PDF(s)</div>
+                            <small style="color: var(--text-light);">Multiple allowed</small>
+                            <div id="promoPreview" class="file-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">PFA Welcome Letter/Certificate</label>
+                        <div class="file-upload-area" onclick="document.getElementById('pfaLetter').click()">
+                            <input type="file" id="pfaLetter" name="pfaLetter" accept=".pdf" required onchange="handleFile(this, 'pfaPreview')">
+                            <div style="font-size: 2rem;">🏦</div>
+                            <div>Click to upload PDF</div>
+                            <small style="color: var(--text-light);">Max: 5MB</small>
+                            <div id="pfaPreview" class="file-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-section" style="margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary" style="font-size: 1.2rem; padding: 15px 40px;">
+                        <span>💾</span> Submit Entry
+                    </button>
+                    <p style="margin-top: 15px; color: var(--text-light); font-size: 0.9rem;">
+                        By submitting, you confirm all information is accurate.
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="card">
+            <div id="adminLogin">
+                <h2 class="card-title">🔐 Admin Login</h2>
+                <div class="admin-login">
+                    <p style="margin-bottom: 20px; color: var(--text-light);">Enter admin credentials to view, edit and export staff records.</p>
+                    <div class="form-group">
+                        <input type="password" id="adminPass" placeholder="Enter Admin Password" style="text-align: center;">
+                    </div>
+                    <button onclick="loginAdmin()" class="btn btn-primary">Login</button>
+                    <p style="margin-top: 20px; font-size: 0.85rem; color: var(--text-light);">
+                        Default password: <code>admin123</code> (Change this in the code)
+                    </p>
+                </div>
+            </div>
+
+            <div id="adminDashboard" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 class="card-title" style="margin: 0;">📊 Admin Dashboard</h2>
+                    <button onclick="logoutAdmin()" class="btn btn-danger">Logout</button>
+                </div>
+
+                <div class="admin-grid">
+                    <div class="stat-card">
+                        <h3 id="totalRecords">0</h3>
+                        <p>Total Records</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="todayRecords">0</h3>
+                        <p>Today's Entries</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="pendingDocs">0</h3>
+                        <p>Pending Review</p>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name, staff number, or PENCOM PIN..." onkeyup="searchRecords()">
+                    <button onclick="loadRecords()" class="btn btn-secondary">🔄 Refresh</button>
+                    <button onclick="exportData()" class="btn btn-primary">📥 Export Excel</button>
+                    <button onclick="window.print()" class="btn btn-warning">🖨️ Print</button>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>Staff No.</th>
+                                <th>Full Name</th>
+                                <th>PENCOM PIN</th>
+                                <th>PFA</th>
+                                <th>Grade</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 40px;">
+                                    Click "Refresh" to load records from Google Sheets
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Instructions -->
+        <div id="instructions" class="card">
+            <h2 class="card-title">📖 Setup Guide</h2>
+            <div style="line-height: 1.8;">
+                <h3 style="color: var(--primary); margin: 20px 0 10px 0;">Step 1: Create Google Sheet</h3>
+                <ol style="margin-left: 20px;">
+                    <li>Go to <a href="https://sheets.new" target="_blank">sheets.new</a></li>
+                    <li>Name it "Pension Nominal Roll Database"</li>
+                    <li>Add headers in Row 1: Timestamp | Surname | FirstName | MiddleName | StaffNumber | Sex | DOB | PENCOMPIN | PFAName | FirstAppointment | CurrentAppointment | Designation | SalaryStructure | GradeLevel | Step | Promotions | BirthCert | StaffID | AppointmentLetter | PromotionLetters | PFALetter | Status</li>
+                </ol>
+
+                <h3 style="color: var(--primary); margin: 20px 0 10px 0;">Step 2: Create Google Apps Script</h3>
+                <ol style="margin-left: 20px;">
+                    <li>In Sheets: Extensions → Apps Script</li>
+                    <li>Delete default code, paste the script provided below</li>
+                    <li>Deploy → New Deployment → Web App</li>
+                    <li>Set access to "Anyone"</li>
+                    <li>Copy the Web App URL</li>
+                </ol>
+
+                <h3 style="color: var(--primary); margin: 20px 0 10px 0;">Step 3: Configure This App</h3>
+                <ol style="margin-left: 20px;">
+                    <li>Open this HTML file in a text editor</li>
+                    <li>Find <code>const SCRIPT_URL = ''</code> (around line 650)</li>
+                    <li>Paste your Google Apps Script URL between the quotes</li>
+                    <li>Change admin password: find <code>const ADMIN_PASSWORD = 'admin123'</code></li>
+                    <li>Save the file</li>
+                </ol>
+
+                <h3 style="color: var(--primary); margin: 20px 0 10px 0;">Step 4: Host the App</h3>
+                <ol style="margin-left: 20px;">
+                    <li>Upload to GitHub Pages (free)</li>
+                    <li>Or use Netlify, Vercel, or any web host</li>
+                    <li>Share the URL with staff</li>
+                </ol>
+
+                <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <strong>⚠️ Important:</strong> For file uploads, connect to Google Drive or use a service like Cloudinary. The current setup stores filenames only.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View/Edit Modal -->
+    <div id="recordModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 style="color: var(--primary); margin-bottom: 20px;">Staff Record Details</h2>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION - CHANGE THESE VALUES
+        // ==========================================
+        const SCRIPT_URL = 'https://script.google.com/a/macros/akanuibiampoly.edu.ng/s/AKfycbzH_seZiS24-YfSGhvKnF-sdjunk2Z5gBfqymvSbQbe8huIK2_V5VOHHOgCIwQaWSJh/exec'; // <-- PASTE YOUR GOOGLE APPS SCRIPT URL HERE
+        const ADMIN_PASSWORD = 'admin123'; // <-- CHANGE THIS PASSWORD
+        const GOOGLE_DRIVE_FOLDER_ID = '1LAvlVUp-gH323DAMuEVK2CdUQ_oRrOgC?usp=sharing'; // <-- OPTIONAL: For file uploads
+
+        let allRecords = [];
+        let isAdmin = false;
+
+        function showTab(tabName) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        // Form Functions
+        function addPromotion() {
+            const container = document.getElementById('promotionsContainer');
+            const entry = document.createElement('div');
+            entry.className = 'promotion-entry';
+            entry.innerHTML = `
+                <div class="row">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="number" name="promotionYear[]" placeholder="Year" min="1960" max="2099">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="text" name="promotionDetails[]" placeholder="Details">
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">Remove</button>
+                </div>
+            `;
+            container.appendChild(entry);
+        }
+
+        function handleFile(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const area = input.parentElement;
+
+            if (input.files.length > 0) {
+                area.classList.add('has-file');
+                preview.innerHTML = '';
+
+                Array.from(input.files).forEach(file => {
+                    if (file.type !== 'application/pdf') {
+                        showToast('Please upload PDF files only', 'error');
+                        input.value = '';
+                        area.classList.remove('has-file');
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        showToast('File size must not exceed 5MB', 'error');
+                        input.value = '';
+                        area.classList.remove('has-file');
+                        return;
+                    }
+
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.innerHTML = `<span>📄 ${file.name}</span><span style="color: var(--secondary);">✓</span>`;
+                    preview.appendChild(item);
+                });
+            }
+        }
+
+        // Form Submission
+        document.getElementById('pensionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!SCRIPT_URL) {
+                showToast('Please configure Google Apps Script URL first', 'error');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const data = {
+                action: 'submit',
+                surname: formData.get('surname'),
+                firstName: formData.get('firstName'),
+                middleName: formData.get('middleName') || '',
+                staffNumber: formData.get('staffNumber'),
+                sex: formData.get('sex'),
+                dob: formData.get('dob'),
+                pencomPin: formData.get('pencomPin'),
+                pfaName: formData.get('pfaName'),
+                firstAppointmentDate: formData.get('firstAppointmentDate'),
+                currentAppointmentDate: formData.get('currentAppointmentDate'),
+                designation: formData.get('designation'),
+                salaryStructure: formData.get('salaryStructure'),
+                gradeLevel: formData.get('gradeLevel'),
+                step: formData.get('step'),
+                promotions: [],
+                documents: {
+                    birthCert: formData.get('birthCert')?.name || '',
+                    staffId: formData.get('staffId')?.name || '',
+                    appointmentLetter: formData.get('appointmentLetter')?.name || '',
+                    promotionLetters: Array.from(formData.getAll('promotionLetters')).map(f => f.name).join(', '),
+                    pfaLetter: formData.get('pfaLetter')?.name || ''
+                }
+            };
+
+            // Collect promotions
+            const years = formData.getAll('promotionYear[]');
+            const details = formData.getAll('promotionDetails[]');
+            for (let i = 0; i < years.length; i++) {
+                if (years[i]) data.promotions.push(`${years[i]}: ${details[i] || ''}`);
+            }
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Record submitted successfully!');
+                    this.reset();
+                    document.querySelectorAll('.file-upload-area').forEach(a => a.classList.remove('has-file'));
+                    document.querySelectorAll('.file-list').forEach(l => l.innerHTML = '');
+                } else {
+                    showToast('Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+                console.error(error);
+            }
+        });
+
+        // Admin Functions
+        function loginAdmin() {
+            const pass = document.getElementById('adminPass').value;
+            if (pass === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                loadRecords();
+                showToast('Welcome, Admin!');
+            } else {
+                showToast('Incorrect password', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            document.getElementById('adminLogin').style.display = 'block';
+            document.getElementById('adminDashboard').style.display = 'none';
+            document.getElementById('adminPass').value = '';
+        }
+
+        async function loadRecords() {
+            if (!SCRIPT_URL) {
+                showToast('Please configure Google Apps Script URL', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(SCRIPT_URL + '?action=getRecords');
+                const result = await response.json();
+
+                if (result.success) {
+                    allRecords = result.data || [];
+                    displayRecords(allRecords);
+                    updateStats();
+                } else {
+                    showToast('Error loading records', 'error');
+                }
+            } catch (error) {
+                showToast('Network error', 'error');
+                console.error(error);
+            }
+        }
+
+        function displayRecords(records) {
+            const tbody = document.getElementById('recordsBody');
+            tbody.innerHTML = '';
+
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No records found</td></tr>';
+                return;
+            }
+
+            records.forEach((record, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record[4] || ''}</td>
+                    <td>${record[1] || ''} ${record[2] || ''}</td>
+                    <td>${record[7] || ''}</td>
+                    <td>${record[8] || ''}</td>
+                    <td>GL ${record[13] || ''} Step ${record[14] || ''}</td>
+                    <td>${record[0] ? new Date(record[0]).toLocaleDateString() : ''}</td>
+                    <td class="action-btns">
+                        <button onclick="viewRecord(${index})" class="btn btn-secondary">View</button>
+                        <button onclick="editRecord(${index})" class="btn btn-warning">Edit</button>
+                        <button onclick="deleteRecord(${index})" class="btn btn-danger">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('totalRecords').textContent = allRecords.length;
+
+            const today = new Date().toDateString();
+            const todayCount = allRecords.filter(r => r[0] && new Date(r[0]).toDateString() === today).length;
+            document.getElementById('todayRecords').textContent = todayCount;
+
+            const pending = allRecords.filter(r => !r[21] || r[21] === 'Pending').length;
+            document.getElementById('pendingDocs').textContent = pending;
+        }
+
+        function searchRecords() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allRecords.filter(r => 
+                (r[1] || '').toLowerCase().includes(term) ||
+                (r[2] || '').toLowerCase().includes(term) ||
+                (r[4] || '').toLowerCase().includes(term) ||
+                (r[7] || '').toLowerCase().includes(term)
+            );
+            displayRecords(filtered);
+        }
+
+        function viewRecord(index) {
+            const r = allRecords[index];
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <div class="row">
+                    <div class="form-group"><label>Surname</label><input type="text" value="${r[1] || ''}" readonly></div>
+                    <div class="form-group"><label>First Name</label><input type="text" value="${r[2] || ''}" readonly></div>
+                    <div class="form-group"><label>Middle Name</label><input type="text" value="${r[3] || ''}" readonly></div>
+                </div>
+                <div class="row">
+                    <div class="form-group"><label>Staff Number</label><input type="text" value="${r[4] || ''}" readonly></div>
+                    <div class="form-group"><label>Sex</label><input type="text" value="${r[5] || ''}" readonly></div>
+                    <div class="form-group"><label>Date of Birth</label><input type="text" value="${r[6] || ''}" readonly></div>
+                </div>
+                <div class="row">
+                    <div class="form-group"><label>PENCOM PIN</label><input type="text" value="${r[7] || ''}" readonly></div>
+                    <div class="form-group"><label>PFA Name</label><input type="text" value="${r[8] || ''}" readonly></div>
+                </div>
+                <div class="row">
+                    <div class="form-group"><label>First Appointment</label><input type="text" value="${r[9] || ''}" readonly></div>
+                    <div class="form-group"><label>Current Appointment</label><input type="text" value="${r[10] || ''}" readonly></div>
+                </div>
+                <div class="form-group"><label>Designation</label><input type="text" value="${r[11] || ''}" readonly></div>
+                <div class="row">
+                    <div class="form-group"><label>Salary Structure</label><input type="text" value="${r[12] || ''}" readonly></div>
+                    <div class="form-group"><label>Grade Level</label><input type="text" value="${r[13] || ''}" readonly></div>
+                    <div class="form-group"><label>Step</label><input type="text" value="${r[14] || ''}" readonly></div>
+                </div>
+                <div class="form-group"><label>Promotions</label><textarea readonly rows="3">${r[15] || ''}</textarea></div>
+                <div class="form-group"><label>Documents</label>
+                    <div style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+                        <div>📄 Birth Cert: ${r[16] || 'Not uploaded'}</div>
+                        <div>🪪 Staff ID: ${r[17] || 'Not uploaded'}</div>
+                        <div>📨 Appointment: ${r[18] || 'Not uploaded'}</div>
+                        <div>📈 Promotions: ${r[19] || 'None'}</div>
+                        <div>🏦 PFA Letter: ${r[20] || 'Not uploaded'}</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('recordModal').classList.add('active');
+        }
+
+        function editRecord(index) {
+            // Implement edit functionality - opens modal with editable fields
+            showToast('Edit feature: Update fields and save to Google Sheets', 'success');
+        }
+
+        async function deleteRecord(index) {
+            if (!confirm('Are you sure you want to delete this record?')) return;
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'delete',
+                        rowIndex: index + 2 // +2 because sheet is 1-indexed and has header
+                    })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Record deleted');
+                    loadRecords();
+                } else {
+                    showToast('Error deleting record', 'error');
+                }
+            } catch (error) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('recordModal').classList.remove('active');
+        }
+
+        function exportData() {
+            let csv = 'Timestamp,Surname,FirstName,MiddleName,StaffNumber,Sex,DOB,PENCOMPIN,PFAName,FirstAppointment,CurrentAppointment,Designation,SalaryStructure,GradeLevel,Step,Promotions,BirthCert,StaffID,AppointmentLetter,PromotionLetters,PFALetter,Status\n';
+
+            allRecords.forEach(r => {
+                csv += r.map(field => `"${(field || '').replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pension_records_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            showToast('Export downloaded!');
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('recordModal');
+            if (event.target === modal) closeModal();
+        }
+    </script>
+</body>
+</html>
